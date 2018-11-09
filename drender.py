@@ -131,7 +131,7 @@ class drenderProject():
 						self.ec2.instanceID = data['InstanceID']
 						break
 					line = f.readline()
-		if found:
+		if !found:
 			print "No such project exists.."
 		return found
 
@@ -159,16 +159,16 @@ class drenderProject():
 		self.checkLocalLog()
 		url = self.ec2.publicDNSName + "/status"
 		contents = urllib2.urlopen(url).read()
-		print contents
+		data = json.loads(contents)
 
 	def sendDataToMaster(self):
 		url = self.ec2.publicDNSName + "/start"
 		bucketName = str(self.projectName) + "/" + str(self.fileName)
-		data = urllib.urlencode({'id' : self.projectName, "software": "blender","source": {"bucketName": "drender","file": bucketName},"startFrame": self.startFrame,"endFrame": self.endFrame,"action": "START"})
+		data = urllib.urlencode({'id' : self.projectName, "software": "blender","source": {"bucketName": "drender","file": bucketName},"startFrame": self.startFrame,"endFrame": self.endFrame,"publicIP":self.ec2.publicDNSName,"action": "START"})
 		req = urllib2.Request(url, data)
 		response = urllib2.urlopen(req)
 		d = response.read()
-		print d
+		data = json.loads(d)
 
 	def deleteFromLog(self):
 		bad_words = [self.projectName]

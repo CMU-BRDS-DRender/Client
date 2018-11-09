@@ -51,7 +51,7 @@ class s3Client():
 
 	def downloadFileFromS3(self,file):
 		frames = list()
-		files = self.bucket.objects.filter(Prefix=str(file) +"/")
+		files = self.bucket.objects.filter(Prefix=str(file) + "/")
 		if not os.path.exists("temp/"):
 			os.mkdir("temp/")
 		for key in files:

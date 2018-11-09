@@ -48,12 +48,11 @@ class ec2Client():
 		waiter.wait(Filters=[{'Name':'instance-state-name','Values':['running']}],InstanceIds=[self.instanceID])
 		#print typeOfWait + " OK"
 
-	# Issue with availability zone
 	def spawnNewMaster(self):
 		response = self.ec2.run_instances(ImageId=self.AWSAmi,MinCount=1,MaxCount=1,InstanceType=self.instanceType)#,Placement={'AvailabilityZone':self.regionName})
 		for i in response['Instances']:
-			print i['ImageId']
-			print i['InstanceId']
+			#print i['ImageId']
+			#print i['InstanceId']
 			self.instanceID = i['InstanceId']
 		self.waitForInstance('instance_running')
 		self.wait_for_status_check()
