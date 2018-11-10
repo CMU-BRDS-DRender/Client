@@ -12,6 +12,7 @@ class s3Client():
 		self.filePath = ''
 		self.projectName = '1'
 		self.URL = ''
+		self.outputFiles = ''
 
 	def setUpS3(self):
 		sts_client = boto3.client('sts')
@@ -58,7 +59,7 @@ class s3Client():
 
 	def downloadFileFromS3(self,file):
 		frames = list()
-		files = self.bucket.objects.filter(Prefix=str(file) + "/")
+		files = self.bucket.objects.filter(Prefix=self.outputFiles)
 		if not os.path.exists("temp/"):
 			os.mkdir("temp/")
 		for key in files:

@@ -17,6 +17,7 @@ class drenderProject():
 		self.endFrame = 10
 		self.fileName = 'render_file.blend'
 		self.filePath = 'a.pdf'
+		self.complete = False
 
 	def setUpAWS(self):
 		self.s3 = s3Client()
@@ -160,6 +161,11 @@ class drenderProject():
 		url = self.ec2.publicDNSName + "/status"
 		contents = urllib2.urlopen(url).read()
 		data = json.loads(contents)
+		self.s3.outputFiles = data["outputURI"]["file"]
+		self.complete = data["complete"]
+		self.framesRendered = 0
+		for job in data["log"]["jobs"]:
+			self.framesRendered += job["framesRendered"]
 
 	def sendDataToMaster(self):
 		url = self.ec2.publicDNSName + "/start"
@@ -177,6 +183,11 @@ class drenderProject():
 		response = urllib2.urlopen(req)
 		d = response.read()
 		data = json.loads(d)
+		self.s3.outputFiles = data["outputURI"]["file"]
+		self.complete = data["complete"]
+		self.framesRendered = 0
+		for job in data["log"]["jobs"]:
+			self.framesRendered += job["framesRendered"]
 
 	def deleteFromLog(self):
 		bad_words = [self.projectName]
@@ -202,13 +213,20 @@ elif render1.task == 'status':
 	render1.setUpAWS()
 	render1.ec2.setUpEc2()
 	render1.getStatusUpdate()
+	percentage = (render1.framesRendered*100)/float(render1.endFrame+render1.startFrame)
+	print "Job No. : " + render1.projectName;
+	print "Status: " + percentage + "%% done"
 elif render1.task == 'download':
-	print "Downloading rendered file"
 	render1.setUpAWS()
 	render1.s3.setUpS3()
-	frames = render1.s3.downloadFileFromS3(render1.projectName)
-	print frames
-	print os.system("ffmpeg -qscale 5 -r 20 -b 9600 -i img%05d.png drender_" + render1.fileName + ".mp4")
+	render1.getStatusUpdate()
+	if(render1.complete == False):
+		print "Project is not yet complete."
+	else:
+		print "Downloading rendered file"
+		frames = render1.s3.downloadFileFromS3(render1.projectName)
+		print frames
+		print os.system("ffmpeg -qscale 5 -r 20 -b 9600 -i img%05d.png drender_" + render1.fileName + ".mp4")
 elif render1.task == 'running':
 	print "Currently running projects are:"
 	render1.checkCurrentProjects()
