@@ -10,13 +10,20 @@ class s3Client():
 		self.fileName = ''
 		self.bucketExists = False
 		self.filePath = ''
-		self.projectName = 'jobname3'
+		self.projectName = '1'
 		self.URL = ''
 
 	def setUpS3(self):
+		sts_client = boto3.client('sts')
+		assumedRoleObject = sts_client.assume_role(RoleArn="arn:aws:iam::214187139358:role/DRenderClientRole",RoleSessionName="UserSession1")
+		credentials = assumedRoleObject['Credentials']
 		#print "Creating bucket: " + self.projectName
-		session = boto3.Session(profile_name='default')
-		self.s3 = session.resource('s3')
+		#session = boto3.Session(profile_name='default')
+		self.s3 = boto3.resource('s3',
+    aws_access_key_id = credentials['AccessKeyId'],
+    aws_secret_access_key = credentials['SecretAccessKey'],
+    aws_session_token = credentials['SessionToken'],
+)
 		self.bucket = self.s3.Bucket(self.projectName)
 		try:
 			self.s3.meta.client.head_bucket(Bucket=self.projectName)

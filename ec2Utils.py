@@ -14,8 +14,15 @@ class ec2Client():
 		self.AWSAmi = ''
 
 	def setUpEc2(self):
-		session = boto3.Session(profile_name='default')
-		self.ec2 = session.client('ec2')
+		sts_client = boto3.client('sts')
+		assumedRoleObject = sts_client.assume_role(RoleArn="arn:aws:iam::214187139358:role/DRenderClientRole",RoleSessionName="UserSession1")
+		credentials = assumedRoleObject['Credentials']
+		#session = boto3.Session(profile_name='default')
+		self.ec2 = boto3.client('ec2',
+    aws_access_key_id = credentials['AccessKeyId'],
+    aws_secret_access_key = credentials['SecretAccessKey'],
+    aws_session_token = credentials['SessionToken'],
+)
 
 	def startInstance(self):
 		try:
@@ -49,10 +56,10 @@ class ec2Client():
 		#print typeOfWait + " OK"
 
 	def spawnNewMaster(self):
-		response = self.ec2.run_instances(ImageId=self.AWSAmi,MinCount=1,MaxCount=1,InstanceType=self.instanceType)#,Placement={'AvailabilityZone':self.regionName})
+		response = self.ec2.run_instances(ImageId=self.AWSAmi,MinCount=1,MaxCount=1,InstanceType=self.instanceType,IamInstanceProfile={'Arn': 'arn:aws:iam::214187139358:instance-profile/MasterNodeRole'})#,Placement={'AvailabilityZone':self.regionName})
 		for i in response['Instances']:
-			#print i['ImageId']
-			#print i['InstanceId']
+			print i['ImageId']
+			print i['InstanceId']
 			self.instanceID = i['InstanceId']
 		self.waitForInstance('instance_running')
 		self.wait_for_status_check()

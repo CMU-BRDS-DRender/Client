@@ -25,7 +25,7 @@ class drenderProject():
 
 		self.AWSAccessKey = ''
 		self.AWSSecretKey = ''
-		self.regionName = 'us-west-2'
+		self.regionName = 'us-east-1a'
 
 
 		# Variables for s3 and ec2
@@ -42,12 +42,12 @@ class drenderProject():
 
 		# Variables for s3
 		self.s3.bucketExists = False
-		self.s3.projectName = 'jobname3'
+		self.s3.projectName = 'drender'
 
 		# Variables for ec2
 		self.ec2.instanceID = '' #Get from spawn
 		self.ec2.instanceType = 't2.micro'
-		self.ec2.AWSAmi = 'ami-0bbe6b35405ecebdb'
+		self.ec2.AWSAmi = 'ami-013be31976ca2c322'
 
 	def checkProjectExists(self):
 		if os.path.exists(self.localLog):	
@@ -131,7 +131,7 @@ class drenderProject():
 						self.ec2.instanceID = data['InstanceID']
 						break
 					line = f.readline()
-		if !found:
+		if found == False:
 			print "No such project exists.."
 		return found
 
@@ -164,7 +164,15 @@ class drenderProject():
 	def sendDataToMaster(self):
 		url = self.ec2.publicDNSName + "/start"
 		bucketName = str(self.projectName) + "/" + str(self.fileName)
-		data = urllib.urlencode({'id' : self.projectName, "software": "blender","source": {"bucketName": "drender","file": bucketName},"startFrame": self.startFrame,"endFrame": self.endFrame,"publicIP":self.ec2.publicDNSName,"action": "START"})
+		data = urllib.urlencode({'id' : self.projectName, 
+			"software": "blender",
+			"source": {
+				"bucketName": "drender",
+				"file": bucketName},
+			"startFrame": self.startFrame,
+			"endFrame": self.endFrame,
+			"publicIP":self.ec2.publicDNSName,
+			"action": "START"})
 		req = urllib2.Request(url, data)
 		response = urllib2.urlopen(req)
 		d = response.read()
