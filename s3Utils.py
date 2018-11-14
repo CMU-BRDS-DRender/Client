@@ -1,4 +1,4 @@
-import boto3
+ import boto3
 from botocore.exceptions import ClientError
 import os
 
@@ -18,8 +18,6 @@ class s3Client():
 		sts_client = boto3.client('sts')
 		assumedRoleObject = sts_client.assume_role(RoleArn="arn:aws:iam::214187139358:role/DRenderClientRole",RoleSessionName="UserSession1")
 		credentials = assumedRoleObject['Credentials']
-		#print "Creating bucket: " + self.projectName
-		#session = boto3.Session(profile_name='default')
 		self.s3 = boto3.resource('s3',
     aws_access_key_id = credentials['AccessKeyId'],
     aws_secret_access_key = credentials['SecretAccessKey'],
