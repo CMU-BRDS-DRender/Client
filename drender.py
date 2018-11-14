@@ -155,15 +155,13 @@ class drenderProject():
 		self.ec2.spawnNewMaster()
 		self.updateLog()
 		self.s3.uploadFileToS3(self.projectName)
-		print "Your job ID is:" + str(self.projectName)
+		print "Your Project ID is:" + str(self.projectName)
 
 	def getStatusUpdate(self):
 		self.checkLocalLog()
 		url = "http://" + self.ec2.publicDNSName + ":8080/status/" + self.projectName
-		print "POST to: " + url
 		contents = urllib2.urlopen(url).read()
 		data = json.loads(contents)
-		print data
 		self.s3.outputFiles = data['outputURI']['file']
 		self.complete = data['complete']
 		self.framesRendered = 0
@@ -172,7 +170,6 @@ class drenderProject():
 
 	def sendDataToMaster(self):
 		url = "http://" + self.ec2.publicDNSName + ":8080/start"
-		print "POST to: " + url
 		bucketName = str(self.projectName) + "/" + str(self.fileName)
 		data1 = {"id" : self.projectName, 
 			"software": "blender",
@@ -183,11 +180,9 @@ class drenderProject():
 			"endFrame": self.endFrame,
 			"publicIP":self.ec2.publicDNSName,
 			"action": "START"}
-
-		print data1
+		print "Starting Job Nodes.."
 		r = requests.post(url,json=data1)
-		print r.text
-		print r.status_code, r.reason
+		print "Your Project is running.."
 
 
 	def deleteFromLog(self):
@@ -217,13 +212,13 @@ elif render1.task == 'status':
 	# render1.checkLocalLog()
 	# render1.sendDataToMaster()
 	percentage = (render1.framesRendered*100)/float(render1.endFrame+render1.startFrame)
-	print "Job No. : " + render1.projectName;
+	print "Project No. : " + render1.projectName;
 	print "Status: " + str(percentage) + "% done"
 elif render1.task == 'download':
 	render1.setUpAWS()
 	render1.s3.setUpS3()
 	render1.getStatusUpdate()
-	render1.complete = True
+	# render1.complete = True
 	print render1.s3.outputFiles
 	if(render1.complete == False):
 		print "Project is not yet complete."
@@ -240,10 +235,10 @@ elif render1.task == 'end':
 	render1.setUpAWS()
 	render1.ec2.setUpEc2()
 	render1.s3.setUpS3()
-	render1.checkLocalLog()
-	render1.ec2.terminateInstance()
-	render1.s3.deleteS3Bucket(render1.projectName)
-	render1.deleteFromLog()
+	if render1.checkLocalLog():
+		render1.ec2.terminateInstance()
+		render1.s3.deleteS3Bucket(render1.projectName)
+		render1.deleteFromLog()
 else:
 	print "incorrect argument for task"
 

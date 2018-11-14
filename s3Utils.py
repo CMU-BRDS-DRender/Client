@@ -62,7 +62,6 @@ class s3Client():
 		if not os.path.exists("temp/"):
 			os.mkdir("temp/")
 		for key in files:
-			print key.key
 			if not firstIteration:
 				self.bucket.download_file(key.key,"temp/" + key.key.split('/')[2])
 				frames.append("temp/" + key.key[9:])
