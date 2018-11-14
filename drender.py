@@ -7,11 +7,12 @@ import ast
 import time
 import urllib2,urllib
 import requests
+from shutil import rmtree
 
 class drenderProject():
 	def __init__(self):
 
-		# Variables for drenderProjecy
+		# Variables for drenderProject
 		self.localLog = 'drenderlogs.json'
 		self.software = 'blender'
 		self.startFrame = 1
@@ -49,7 +50,7 @@ class drenderProject():
 		# Variables for ec2
 		self.ec2.instanceID = '' #Get from spawn
 		self.ec2.instanceType = 't2.micro'
-		self.ec2.AWSAmi = 'ami-04c42593f6ba49ad6'
+		self.ec2.AWSAmi = 'ami-0f17135caf67a40aa'
 
 	def checkProjectExists(self):
 		if os.path.exists(self.localLog):	
@@ -97,7 +98,6 @@ class drenderProject():
 		with open(self.localLog,'r') as f:
 			line = f.readline()
 			while line:
-				#print line
 				data = ast.literal_eval(line[:])
 				lastID = data['id']
 				line = f.readline()
@@ -209,8 +209,6 @@ elif render1.task == 'status':
 	render1.setUpAWS()
 	render1.ec2.setUpEc2()
 	render1.getStatusUpdate()
-	# render1.checkLocalLog()
-	# render1.sendDataToMaster()
 	percentage = (render1.framesRendered*100)/float(render1.endFrame+render1.startFrame)
 	print "Project No. : " + render1.projectName;
 	print "Status: " + str(percentage) + "% done"
@@ -218,15 +216,14 @@ elif render1.task == 'download':
 	render1.setUpAWS()
 	render1.s3.setUpS3()
 	render1.getStatusUpdate()
-	# render1.complete = True
 	print render1.s3.outputFiles
 	if(render1.complete == False):
 		print "Project is not yet complete."
 	else:
 		print "Downloading rendered file"
 		frames = render1.s3.downloadFileFromS3(render1.projectName)
-		print frames
-		print os.system("ffmpeg -r 20 -i temp/frame-%05d.jpg -b 9600 -qscale 5 drender_" + render1.fileName + ".mp4")
+		os.system("ffmpeg -r 20 -i temp/frame-%05d.jpg -b 9600 -qscale 5 drender_" + render1.fileName + ".mp4")
+		rmtree("temp/")
 elif render1.task == 'running':
 	print "Currently running projects are:"
 	render1.checkCurrentProjects()
@@ -249,6 +246,7 @@ else:
 	python drender.py start blender a.pdf 0 10 
 	TO DO:
 	1. Get ffmpeg info from file instead of user/static
+	tail -f /tmp/applicaj....log
 """
 
 		
