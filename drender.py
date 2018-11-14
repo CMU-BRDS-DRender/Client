@@ -6,6 +6,7 @@ import json
 import ast
 import time
 import urllib2,urllib
+import requests
 
 class drenderProject():
 	def __init__(self):
@@ -13,9 +14,9 @@ class drenderProject():
 		# Variables for drenderProjecy
 		self.localLog = 'drenderlogs.json'
 		self.software = 'blender'
-		self.startFrame = 0
-		self.endFrame = 10
-		self.fileName = 'render_file.blend'
+		self.startFrame = 1
+		self.endFrame = 15
+		self.fileName = 'demo2.03.blend'
 		self.filePath = 'a.pdf'
 		self.complete = False
 
@@ -48,7 +49,7 @@ class drenderProject():
 		# Variables for ec2
 		self.ec2.instanceID = '' #Get from spawn
 		self.ec2.instanceType = 't2.micro'
-		self.ec2.AWSAmi = 'ami-013be31976ca2c322'
+		self.ec2.AWSAmi = 'ami-04c42593f6ba49ad6'
 
 	def checkProjectExists(self):
 		if os.path.exists(self.localLog):	
@@ -158,19 +159,22 @@ class drenderProject():
 
 	def getStatusUpdate(self):
 		self.checkLocalLog()
-		url = self.ec2.publicDNSName + "/status"
+		url = "http://" + self.ec2.publicDNSName + ":8080/status/" + self.projectName
+		print "POST to: " + url
 		contents = urllib2.urlopen(url).read()
 		data = json.loads(contents)
-		self.s3.outputFiles = data["outputURI"]["file"]
-		self.complete = data["complete"]
+		print data
+		self.s3.outputFiles = data['outputURI']['file']
+		self.complete = data['complete']
 		self.framesRendered = 0
-		for job in data["log"]["jobs"]:
+		for job in data['log']['jobs']:
 			self.framesRendered += job["framesRendered"]
 
 	def sendDataToMaster(self):
-		url = self.ec2.publicDNSName + "/start"
+		url = "http://" + self.ec2.publicDNSName + ":8080/start"
+		print "POST to: " + url
 		bucketName = str(self.projectName) + "/" + str(self.fileName)
-		data = urllib.urlencode({'id' : self.projectName, 
+		data1 = {"id" : self.projectName, 
 			"software": "blender",
 			"source": {
 				"bucketName": "drender",
@@ -178,16 +182,13 @@ class drenderProject():
 			"startFrame": self.startFrame,
 			"endFrame": self.endFrame,
 			"publicIP":self.ec2.publicDNSName,
-			"action": "START"})
-		req = urllib2.Request(url, data)
-		response = urllib2.urlopen(req)
-		d = response.read()
-		data = json.loads(d)
-		self.s3.outputFiles = data["outputURI"]["file"]
-		self.complete = data["complete"]
-		self.framesRendered = 0
-		for job in data["log"]["jobs"]:
-			self.framesRendered += job["framesRendered"]
+			"action": "START"}
+
+		print data1
+		r = requests.post(url,json=data1)
+		print r.text
+		print r.status_code, r.reason
+
 
 	def deleteFromLog(self):
 		bad_words = [self.projectName]
@@ -213,20 +214,24 @@ elif render1.task == 'status':
 	render1.setUpAWS()
 	render1.ec2.setUpEc2()
 	render1.getStatusUpdate()
+	# render1.checkLocalLog()
+	# render1.sendDataToMaster()
 	percentage = (render1.framesRendered*100)/float(render1.endFrame+render1.startFrame)
 	print "Job No. : " + render1.projectName;
-	print "Status: " + percentage + "%% done"
+	print "Status: " + str(percentage) + "% done"
 elif render1.task == 'download':
 	render1.setUpAWS()
 	render1.s3.setUpS3()
 	render1.getStatusUpdate()
+	render1.complete = True
+	print render1.s3.outputFiles
 	if(render1.complete == False):
 		print "Project is not yet complete."
 	else:
 		print "Downloading rendered file"
 		frames = render1.s3.downloadFileFromS3(render1.projectName)
 		print frames
-		print os.system("ffmpeg -qscale 5 -r 20 -b 9600 -i img%05d.png drender_" + render1.fileName + ".mp4")
+		print os.system("ffmpeg -r 20 -i temp/frame-%05d.jpg -b 9600 -qscale 5 drender_" + render1.fileName + ".mp4")
 elif render1.task == 'running':
 	print "Currently running projects are:"
 	render1.checkCurrentProjects()

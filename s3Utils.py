@@ -1,4 +1,4 @@
- import boto3
+import boto3
 from botocore.exceptions import ClientError
 import os
 
@@ -57,12 +57,17 @@ class s3Client():
 
 	def downloadFileFromS3(self,file):
 		frames = list()
+		firstIteration = True
 		files = self.bucket.objects.filter(Prefix=self.outputFiles)
 		if not os.path.exists("temp/"):
 			os.mkdir("temp/")
 		for key in files:
-			self.bucket.download_file(key.key,"temp/" + key.key[2:])
-			frames.append("temp/" + key.key[2:])
+			print key.key
+			if not firstIteration:
+				self.bucket.download_file(key.key,"temp/" + key.key.split('/')[2])
+				frames.append("temp/" + key.key[9:])
+			else:
+				firstIteration = False
 		return frames
 
 	def deleteS3Bucket(self,file):
