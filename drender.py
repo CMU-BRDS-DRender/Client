@@ -53,7 +53,7 @@ class drenderProject():
 		# Variables for ec2
 		self.ec2.instanceID = '' #Get from spawn
 		self.ec2.instanceType = 't2.micro'
-		self.ec2.AWSAmi = 'ami-065a51153f487ada4'
+		self.ec2.AWSAmi = 'ami-0f5033efca48de4c0'
 
 	def checkProjectExists(self):
 		if os.path.exists(self.localLog):	
@@ -241,7 +241,7 @@ elif render1.task == 'download':
 	else:
 		print "Downloading rendered file"
 		frames = render1.s3.downloadFileFromS3(render1.projectName)
-		os.system("ffmpeg -r 20 -i temp/frame-%05d.jpg -b 9600 -qscale 5 drender_" + render1.fileName + ".mp4")
+		os.system("ffmpeg -r 20 -i temp/frame-%05d.jpg -b 9600 -qscale 5 drender_" + render1.fileName + ".mp4 > /dev/null")
 		rmtree("temp/")
 elif render1.task == 'running':
 	render1.checkCurrentProjects()
