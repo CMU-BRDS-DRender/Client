@@ -156,11 +156,16 @@ class drenderProject():
 		else:	
 			with open(self.localLog,'r') as f:
 				line = f.readline()
-				while line:
-					data = ast.literal_eval(line[:])
-					if(int(data['id']) != 0):
-						print "Project ID: " + str(data['id'])
-					line = f.readline()
+				noOfProjects = len(f.read())
+				if(noOfProjects == 0):
+					print "No Projects currently running.."
+				else:
+					print "Currently running projects are:"
+					while line:
+						data = ast.literal_eval(line[:])
+						if(int(data['id']) != 0):
+							print "Project ID: " + str(data['id'])
+						line = f.readline()
 
 
 	def startProject(self):
@@ -239,7 +244,6 @@ elif render1.task == 'download':
 		os.system("ffmpeg -r 20 -i temp/frame-%05d.jpg -b 9600 -qscale 5 drender_" + render1.fileName + ".mp4")
 		rmtree("temp/")
 elif render1.task == 'running':
-	print "Currently running projects are:"
 	render1.checkCurrentProjects()
 elif render1.task == 'end':
 	print "End of project"
@@ -253,6 +257,4 @@ elif render1.task == 'end':
 else:
 	print "incorrect argument for task"
 
-
-		
 
