@@ -254,14 +254,5 @@ else:
 	print "incorrect argument for task"
 
 
-
-
-"""
-	python drender.py start blender a.pdf 0 10 
-	TO DO:
-	1. Get ffmpeg info from file instead of user/static
-	tail -f /tmp/applicaj....log
-"""
-
 		
 
