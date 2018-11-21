@@ -31,17 +31,18 @@ positional arguments:
 
 optional arguments:
   -h, --help            show this help message and exit
-  --software SOFTWARE   Select the type of file to be rendered. Only blender
-                        for now.
+
+  --software SOFTWARE   Select the type of file to be rendered. Only blender for now.
+
   --path PATH           Enter the path to the file to be rendered.
-  --startFrame STARTFRAME
-                        Enter the starting frame to be rendered.
+
+  --startFrame STARTFRAME Enter the starting frame to be rendered.
+
   --endFrame ENDFRAME   Enter the ending frame to be rendered.
-  --framesPerMachine FRAMESPERMACHINE
-                        Enter how many frames you want a single machine to
-                        render.(More frames = slower render,less cost).
-  --projectNumber PROJECTNUMBER
-                        Enter the project number for end, download and status.
+
+  --framesPerMachine FRAMESPERMACHINE Enter how many frames you want a single machine to render.(More frames = slower render,less cost).
+
+  --projectNumber PROJECTNUMBER Enter the project number for end download and status.
 
 Example Usage:
 1. python drender.py start --software blender --path scene.blend --startFrame 0 --endFrame 10 --framesPerMachine 20
