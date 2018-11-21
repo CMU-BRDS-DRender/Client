@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 from s3Utils import s3Client
 from ec2Utils import ec2Client
 import os
@@ -8,6 +9,7 @@ import time
 import urllib2,urllib
 import requests
 from shutil import rmtree
+import argparse
 
 class drenderProject():
 	def __init__(self):
@@ -20,6 +22,7 @@ class drenderProject():
 		self.fileName = 'demo2.03.blend'
 		self.filePath = 'a.pdf'
 		self.complete = False
+		self.framesPerMachine = 50
 
 	def setUpAWS(self):
 		self.s3 = s3Client()
@@ -50,7 +53,7 @@ class drenderProject():
 		# Variables for ec2
 		self.ec2.instanceID = '' #Get from spawn
 		self.ec2.instanceType = 't2.micro'
-		self.ec2.AWSAmi = 'ami-0f17135caf67a40aa'
+		self.ec2.AWSAmi = 'ami-065a51153f487ada4'
 
 	def checkProjectExists(self):
 		if os.path.exists(self.localLog):	
@@ -65,15 +68,25 @@ class drenderProject():
 			return False
 
 	def getCommandLineArguments(self):
-		self.task = sys.argv[1]
+		parser = argparse.ArgumentParser()
+		parser.add_argument("task",help="Select between start, end, download, status and running")
+		parser.add_argument("--software",help="Select the type of file to be rendered. Only blender for now.")
+		parser.add_argument("--path",help="Enter the path to the file to be rendered.")
+		parser.add_argument("--startFrame",help="Enter the starting frame to be rendered.",type=int)
+		parser.add_argument("--endFrame",help="Enter the ending frame to be rendered.",type=int)
+		parser.add_argument("--framesPerMachine",help="Enter how many frames you want a single machine to render.(More frames = slower render,less cost).",type=int)
+		parser.add_argument("--projectNumber",help="Enter the project number for end, download and status.")
+		args = parser.parse_args()
+		self.task = args.task
 		if self.task == 'start':
-			self.software = sys.argv[2]
-			self.filePath = sys.argv[3]
+			self.software = args.software
+			self.filePath = args.path
 			self.fileName = self.filePath.split('/')[-1]
-			self.startFrame = sys.argv[4]
-			self.endFrame = sys.argv[5]
+			self.startFrame = args.startFrame
+			self.endFrame = args.endFrame
+			self.framesPerMachine = args.framesPerMachine
 		elif self.task == 'end' or self.task == 'download' or self.task == 'status':
-			self.projectName =  str(sys.argv[2])
+			self.projectName =  args.projectNumber
 			
 	def initializeLog(self):
 		logEntry = {
@@ -179,7 +192,8 @@ class drenderProject():
 			"startFrame": self.startFrame,
 			"endFrame": self.endFrame,
 			"publicIP":self.ec2.publicDNSName,
-			"action": "START"}
+			"action": "START",
+			"framesPerMachine":self.framesPerMachine}
 		print "Starting Job Nodes.."
 		r = requests.post(url,json=data1)
 		print "Your Project is running.."
@@ -209,7 +223,7 @@ elif render1.task == 'status':
 	render1.setUpAWS()
 	render1.ec2.setUpEc2()
 	render1.getStatusUpdate()
-	percentage = (render1.framesRendered*100)/float(render1.endFrame+render1.startFrame)
+	percentage = (render1.framesRendered*10)/float(render1.endFrame)
 	print "Project No. : " + render1.projectName;
 	print "Status: " + str(percentage) + "% done"
 elif render1.task == 'download':
