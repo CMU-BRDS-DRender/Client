@@ -57,8 +57,8 @@ class ec2Client():
 	def spawnNewMaster(self):
 		response = self.ec2.run_instances(ImageId=self.AWSAmi,MinCount=1,MaxCount=1,InstanceType=self.instanceType,IamInstanceProfile={'Arn': 'arn:aws:iam::214187139358:instance-profile/MasterNodeRole'},SecurityGroupIds=['sg-4ccbb105'],KeyName='drender')#,Placement={'AvailabilityZone':self.regionName})
 		for i in response['Instances']:
-			print i['ImageId']
-			print i['InstanceId']
+			# print i['ImageId']
+			# print i['InstanceId']
 			self.instanceID = i['InstanceId']
 		self.waitForInstance('instance_running')
 		self.wait_for_status_check()

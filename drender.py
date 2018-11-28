@@ -241,7 +241,7 @@ elif render1.task == 'download':
 	else:
 		print "Downloading rendered file"
 		frames = render1.s3.downloadFileFromS3(render1.projectName)
-		os.system("ffmpeg -r 20 -i temp/frame-%05d.jpg -b 9600 -qscale 5 drender_" + render1.fileName + ".mp4 > /dev/null")
+		os.system("ffmpeg -r 24 -s 720x1280 -i ../temp/frame-%05d.jpg -crf 20 drender_" + render1.fileName + ".mp4 > /dev/null")
 		rmtree("temp/")
 elif render1.task == 'running':
 	render1.checkCurrentProjects()
@@ -258,3 +258,9 @@ else:
 	print "incorrect argument for task"
 
 
+# Tasks:
+# 1. ffmpeg
+# 2. live log, verbose log
+# 3. Find info from the blend file
+
+#  python start --software blender --path /Users/swaroopbelur/Desktop/demo2.03.blend --startFrame 1 --endFrame 150 --framesPerMachine 50
