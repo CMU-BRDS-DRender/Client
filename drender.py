@@ -156,12 +156,14 @@ class drenderProject():
 		else:	
 			with open(self.localLog,'r') as f:
 				line = f.readline()
-				noOfProjects = len(f.read())
+				#print line
+				data = f.read()[:-1].split("\n")
+				noOfProjects = len(data)
 				if(noOfProjects == 0):
 					print "No Projects currently running.."
 				else:
 					print "Currently running projects are:"
-					while line:
+					for line in data:
 						data = ast.literal_eval(line[:])
 						if(int(data['id']) != 0):
 							print "Project ID: " + str(data['id'])
@@ -241,7 +243,7 @@ elif render1.task == 'download':
 	else:
 		print "Downloading rendered file"
 		frames = render1.s3.downloadFileFromS3(render1.projectName)
-		os.system("ffmpeg -r 24 -s 720x1280 -i ../temp/frame-%05d.jpg -crf 20 drender_" + render1.fileName + ".mp4 > /dev/null")
+		os.system("ffmpeg -r 24 -s 720x1280 -i temp/frame-%05d.jpg -crf 20 drender_" + render1.fileName + ".mp4 > /dev/null")
 		rmtree("temp/")
 elif render1.task == 'running':
 	render1.checkCurrentProjects()
@@ -263,4 +265,7 @@ else:
 # 2. live log, verbose log
 # 3. Find info from the blend file
 
-#  python start --software blender --path /Users/swaroopbelur/Desktop/demo2.03.blend --startFrame 1 --endFrame 150 --framesPerMachine 50
+#  python drender.py start --software blender --path /Users/swaroopbelur/Desktop/demo2.03.blend --startFrame 1 --endFrame 150 --framesPerMachine 50
+#	ssh -i /Users/swaroopbelur/Downloads/drender.pem ubuntu@
+#	tail -f /tmp/application-0-0.log
+# 	sudo lsof -i :8080
